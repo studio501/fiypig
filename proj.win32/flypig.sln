@@ -29,10 +29,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libBox2D", "..\..\..\extern
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libchipmunk", "..\..\..\external\chipmunk\proj.win32\chipmunk.vcxproj", "{207BC7A9-CCF1-4F2F-A04D-45F72242AE25}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "blockpuzzle", "..\..\blockpuzzle_inc_extensions\proj.win32\blockpuzzle.vcxproj", "{42319803-339B-471C-BC3D-1B445B8B030C}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCpp", "..\..\..\samples\Cpp\TestCpp\proj.win32\TestCpp.vcxproj", "{E3A16284-6A9E-4DF8-B061-1D0C588CC387}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -63,14 +59,6 @@ Global
 		{207BC7A9-CCF1-4F2F-A04D-45F72242AE25}.Debug|Win32.Build.0 = Debug|Win32
 		{207BC7A9-CCF1-4F2F-A04D-45F72242AE25}.Release|Win32.ActiveCfg = Release|Win32
 		{207BC7A9-CCF1-4F2F-A04D-45F72242AE25}.Release|Win32.Build.0 = Release|Win32
-		{42319803-339B-471C-BC3D-1B445B8B030C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{42319803-339B-471C-BC3D-1B445B8B030C}.Debug|Win32.Build.0 = Debug|Win32
-		{42319803-339B-471C-BC3D-1B445B8B030C}.Release|Win32.ActiveCfg = Release|Win32
-		{42319803-339B-471C-BC3D-1B445B8B030C}.Release|Win32.Build.0 = Release|Win32
-		{E3A16284-6A9E-4DF8-B061-1D0C588CC387}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E3A16284-6A9E-4DF8-B061-1D0C588CC387}.Debug|Win32.Build.0 = Debug|Win32
-		{E3A16284-6A9E-4DF8-B061-1D0C588CC387}.Release|Win32.ActiveCfg = Release|Win32
-		{E3A16284-6A9E-4DF8-B061-1D0C588CC387}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
