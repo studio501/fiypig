@@ -46,10 +46,10 @@ import com.google.ads.AdSize;
 import com.google.ads.AdView;
 
 public class MainActivity extends Cocos2dxActivity {
-    private static final String ADMOB_ID = "a1528effc3d900f";
-    private static final String CHARTBOOST_APPID = "51fa5fbb16ba473d02000002";
-    private static final String CHARTBOOST_APPSIGNATURE = "a42b517ab2d76110abca37b7515502710c26955b";
-    private static final String FLURRY_ID = "CV229QVNN7VYBWNQDKPH";
+    private static final String ADMOB_ID = "a152fcc3d561c57";
+    private static final String CHARTBOOST_APPID = "52fb04702d42da57bc7e8b95";
+    private static final String CHARTBOOST_APPSIGNATURE = "1999c1fc640280a0e033219cc04010db536d85a8";
+    private static final String FLURRY_ID = "FFMSX5CR5TMDCGDWQF6C";
 
     private static MainActivity sInstance;
 
@@ -165,7 +165,7 @@ public class MainActivity extends Cocos2dxActivity {
     private void addAdMob() {
         try {
             FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            adParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+            adParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
             mAdMobBanner = new AdView(this, AdSize.SMART_BANNER, ADMOB_ID);
             mAdMobBanner.loadAd(new AdRequest());
             addContentView(mAdMobBanner, adParams);
@@ -300,6 +300,13 @@ public class MainActivity extends Cocos2dxActivity {
                 }
             }
         });
+    }
+
+    public static void submitScore(int score) {
+    }
+
+    public static void showLeaderboard() {
+
     }
 
     static {

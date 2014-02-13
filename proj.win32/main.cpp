@@ -17,5 +17,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     CCEGLView* eglView = CCEGLView::sharedOpenGLView();
     eglView->setViewName("flypig");
     eglView->setFrameSize(480, 800);
+    //eglView->setFrameSize(240, 320);
     return CCApplication::sharedApplication()->run();
 }
