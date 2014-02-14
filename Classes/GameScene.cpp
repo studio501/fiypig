@@ -275,11 +275,16 @@ void GameScene::update(float delta)
 
             m_pPig->setPositionY(posY);
             float orgRotation = m_pPig->getRotation();
-            float rotation = m_pPig->getRotation() + ((orgRotation >= 0 ? 300 : (25 + orgRotation) * 2000 / 25)* delta);
-            if (orgRotation < -10)
+            float rotation = 0;
+            if (orgRotation < -22)
             {
-                rotation = rotation * 0.1f + orgRotation * 0.9f;
+                rotation = orgRotation + delta * 30;
             }
+            else
+            {
+                rotation = orgRotation + delta * 500;
+            }
+
             rotation = MIN(rotation, 80);
             m_pPig->setRotation(rotation);
         }
@@ -399,7 +404,7 @@ void GameScene::raisePig()
         float raiseHeight = MIN(tapRaiseHeight, m_VisibleOrigin.y + m_VisibleSize.height - m_pPig->getPositionY() - m_pPig->getContentSize().height / 2);
 
         CCActionInterval* raiseEaseOut = CCEaseSineOut::create(CCMoveBy::create(0.4f * raiseHeight / tapRaiseHeight, ccp(0, raiseHeight)));
-        CCSpawn *action = CCSpawn::createWithTwoActions(raiseEaseOut, CCRotateTo::create(0.2f, -15));
+        CCSpawn *action = CCSpawn::createWithTwoActions(raiseEaseOut, CCRotateTo::create(0.1f, -25));
         action->setTag(kTagRaise);
 
         m_pPig->stopActionByTag(kTagRaise);
