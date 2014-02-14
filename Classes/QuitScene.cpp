@@ -3,6 +3,9 @@
 #include "NativeBridge.h"
 #include "LGMenuItemImage.h"
 
+#include "MainScene.h"
+#include "SimpleAudioEngine.h"
+
 USING_NS_CC;
 
 CCScene *QuitScene::scene()
@@ -37,6 +40,7 @@ QuitScene *QuitScene::create()
 }
 
 QuitScene::QuitScene()
+    : m_Sound(false)
 {
 }
 
@@ -54,6 +58,8 @@ bool QuitScene::init()
     }
 
     setKeypadEnabled(true);
+
+    m_Sound = CCUserDefault::sharedUserDefault()->getBoolForKey("sound", true);
 
     CCPoint visibleOrigin = CCDirector::sharedDirector()->getVisibleOrigin();
     CCSize visibleSize = CCDirector::sharedDirector()->getVisibleSize();
@@ -101,6 +107,10 @@ void QuitScene::onExit()
 
 void QuitScene::yesCallback(CCObject *sender)
 {
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
     CCDirector::sharedDirector()->end();
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     exit(0);
@@ -109,16 +119,28 @@ void QuitScene::yesCallback(CCObject *sender)
 
 void QuitScene::noCallback(CCObject *sender)
 {
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
     CCDirector::sharedDirector()->popScene();
 }
 
 void QuitScene::moreCallback(CCObject *sender)
 {
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
     NativeBridge::onMoreClicked();
 }
 
 void QuitScene::keyBackClicked()
 {
     CCLayer::keyBackClicked();
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
     CCDirector::sharedDirector()->popScene();
 }

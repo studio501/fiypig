@@ -25,6 +25,9 @@ public:
     void noCallback(CCObject *sender);
     void moreCallback(CCObject *sender);
     virtual void keyBackClicked();
+
+private:
+    bool m_Sound;
 };
 
 #endif // __QUIT_SCENE_H__

@@ -5,6 +5,7 @@
 
 #include <string>
 #include "LGMenuItemImage.h"
+#include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 
@@ -40,6 +41,7 @@ MainScene *MainScene::create()
 }
 
 MainScene::MainScene()
+    : m_Sound(false)
 {
 }
 
@@ -71,11 +73,12 @@ bool MainScene::init()
     sprite->setPosition(ccp(visibleCenter.x, visibleCenter.y + 0.24125f * visibleSize.height));
     addChild(sprite);
 
-    bool sound = CCUserDefault::sharedUserDefault()->getBoolForKey("sound", true);
-    CCUserDefault::sharedUserDefault()->setBoolForKey("sound", sound);
+    m_Sound = CCUserDefault::sharedUserDefault()->getBoolForKey("sound", true);
+    CCUserDefault::sharedUserDefault()->setBoolForKey("sound", m_Sound);
     m_pSound = LGMenuItemImage::create("sound_off.png", "sound_on.png", this, menu_selector(MainScene::soundCallback));
+    m_pSound->setScale(0.65f);
     m_pSound->setPosition(visibleOrigin.x + visibleSize.width * 0.9f, visibleOrigin.y + visibleSize.height * 0.94375f);
-    if (sound)
+    if (m_Sound)
     {
         m_pSound->selected();
     }
@@ -83,6 +86,12 @@ bool MainScene::init()
     {
         m_pSound->unselected();
     }
+
+    CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_DIE);
+    CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_HIT);
+    CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_POINT);
+    CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_SWOOSHING);
+    CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_WING);
 
     CCSpriteFrameCache* cache = CCSpriteFrameCache::sharedSpriteFrameCache();
     cache->addSpriteFramesWithFile("pigs.plist");
@@ -112,9 +121,9 @@ bool MainScene::init()
 
 void MainScene::soundCallback(CCObject *sender)
 {
-    bool sound = !CCUserDefault::sharedUserDefault()->getBoolForKey("sound", true);
-    CCUserDefault::sharedUserDefault()->setBoolForKey("sound", sound);
-    if (sound)
+    m_Sound = !m_Sound;
+    CCUserDefault::sharedUserDefault()->setBoolForKey("sound", m_Sound);
+    if (m_Sound)
     {
         m_pSound->selected();
     }
@@ -126,6 +135,10 @@ void MainScene::soundCallback(CCObject *sender)
 
 void MainScene::playCallback(CCObject *sender)
 {
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
     CCDirector::sharedDirector()->pushScene(GameScene::scene());
 }
 
@@ -135,6 +148,10 @@ void MainScene::rankCallback(CCObject *sender)
 
 void MainScene::moreCallback(CCObject *sender)
 {
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
     NativeBridge::onMoreClicked();
 }
 
@@ -148,5 +165,9 @@ void MainScene::onEnter()
 void MainScene::keyBackClicked()
 {
     CCLayer::keyBackClicked();
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
     CCDirector::sharedDirector()->pushScene(QuitScene::scene());
 }

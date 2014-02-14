@@ -3,26 +3,14 @@
 #include "LGLayer.h"
 
 #include "SimpleAudioEngine.h"
+#include "MainScene.h"
 
 USING_NS_CC;
 
 #define kTagFlutter 1
 #define kTagRaise 2
-
-// android effect only support ogg
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
-#define SFX_DIE             "sfx_die.ogg"
-#define SFX_HIT             "sfx_hit.ogg"
-#define SFX_POINT         "sfx_point.ogg"
-#define SFX_SWOOSHING "sfx_swooshing.ogg"
-#define SFX_WING          "sfx_wing.ogg"
-#else
-#define SFX_DIE             "sfx_die.mp3"
-#define SFX_HIT             "sfx_hit.mp3"
-#define SFX_POINT         "sfx_point.mp3"
-#define SFX_SWOOSHING "sfx_swooshing.mp3"
-#define SFX_WING          "sfx_wing.mp3"
-#endif // CC_PLATFORM_ANDROID
+#define kTagOverScoreBoard 3
+#define kTagOverMenu 4
 
 CCScene* GameScene::scene()
 {
@@ -118,6 +106,7 @@ bool GameScene::init()
     m_ScoreLabel->retain();
     m_ScoreLabel->setZOrder(1);
     m_ScoreLabel->setAnchorPoint(ccp(0.5, 0.5));
+    m_ScoreLabel->setScale(0.85f);
     m_ScoreLabel->setPosition(m_VisibleOrigin.x + m_VisibleSize.width / 2, m_VisibleOrigin.y + m_VisibleSize.height * 0.86125);
     addChild(m_ScoreLabel);
 
@@ -127,12 +116,14 @@ bool GameScene::init()
     addChild(m_Title);
     m_Hint = CCSprite::create("hint.png");
     m_Hint->retain();
+    m_Hint->setScale(0.85f);
     m_Hint->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width / 2, m_VisibleOrigin.y + m_VisibleSize.height / 2));
     addChild(m_Hint);
 
     m_pPause = LGMenuItemImage::create("pause.png", NULL, this, menu_selector(GameScene::pauseCallback));
     m_pPause->retain();
     m_pPause->setVisible(false);
+    m_pPause->setScale(0.85f);
     m_pPause->setPosition(m_VisibleOrigin.x + 43, m_VisibleOrigin.y + m_VisibleSize.height - 41);
     CCMenu *pMenu = CCMenu::create(m_pPause, NULL);
     pMenu->setZOrder(3);
@@ -144,15 +135,6 @@ bool GameScene::init()
 
     scheduleUpdate();
     schedule(schedule_selector(GameScene::updatePillar), 0.1f, kCCRepeatForever, 0);
-
-    if (m_Sound)
-    {
-        CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_DIE);
-        CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_HIT);
-        CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_POINT);
-        CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_SWOOSHING);
-        CocosDenshion::SimpleAudioEngine::sharedEngine()->preloadEffect(SFX_WING);
-    }
 
     return true;
 }
@@ -325,6 +307,11 @@ void GameScene::keyBackClicked()
 {
     CCLayer::keyBackClicked();
 
+    if (m_Sound)
+    {
+        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    }
+
     if (m_Started)
     {
         if (!m_CurrentLayer)
@@ -456,12 +443,12 @@ void GameScene::updatePillar(float dt)
     }
 
     // add new pillar
-    if ((m_Pillars[0] == NULL && m_PassedTime > 6) || (m_Pillars[0] != NULL && lastPillarPosX + m_VisibleSize.width * 0.5625 <= m_VisibleOrigin.x + m_VisibleSize.width && firstEmptyIndex <= 2))
+    if ((m_Pillars[0] == NULL && m_PassedTime > 3.5f) || (m_Pillars[0] != NULL && lastPillarPosX + m_VisibleSize.width * 0.5625 <= m_VisibleOrigin.x + m_VisibleSize.width && firstEmptyIndex <= 2))
     {
         int bottomPillar_Height = minPillarHeight + CCRANDOM_0_1() * (m_VisibleSize.height - m_GroundPosY - minPillarHeight - minPillarHeight - m_Gap);
         int bottomPillar_BottomY = m_VisibleOrigin.y + m_GroundPosY;
         int topPillar_BottomY = bottomPillar_BottomY + bottomPillar_Height + m_Gap;
-        int topPillar_Height = m_VisibleSize.height - topPillar_BottomY + m_VisibleOrigin.y;
+        int topPillar_Height = CCDirector::sharedDirector()->getWinSize().height - topPillar_BottomY + m_VisibleOrigin.y;
         m_Pillars[firstEmptyIndex] = CCSprite::create("pillar.png", CCRectMake(0, 0, pillarWidth, topPillar_Height));
         m_Pillars[firstEmptyIndex]->retain();
         m_Pillars[firstEmptyIndex]->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width + pillarWidth / 2, topPillar_BottomY + topPillar_Height / 2));
@@ -528,7 +515,9 @@ void GameScene::showOverView()
         m_pOverLayer->addChild(pTitle);
 
         CCSprite *pBgScore = CCSprite::create("bg_score.png");
-        pBgScore->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width / 2, m_VisibleOrigin.y + m_VisibleSize.height * 0.535f));
+        //pBgScore->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width / 2, m_VisibleOrigin.y + m_VisibleSize.height * 0.535f));
+        pBgScore->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width / 2, m_VisibleOrigin.y - pBgScore->getContentSize().height / 2));
+        pBgScore->setTag(kTagOverScoreBoard);
         m_pOverLayer->addChild(pBgScore);
 
         float bgW = pBgScore->getContentSize().width, bgH = pBgScore->getContentSize().height;
@@ -540,30 +529,34 @@ void GameScene::showOverView()
             CCUserDefault::sharedUserDefault()->setIntegerForKey("record", record);
 
             CCSprite *indicatorNew = CCSprite::create("new.png");
-            indicatorNew->setPosition(ccp(pBgScore->getPositionX() - bgW * 0.2448980f, pBgScore->getPositionY() - bgH * 0.08035714f));
-            m_pOverLayer->addChild(indicatorNew);
+            indicatorNew->setPosition(ccp(bgW * (0.5 - 0.2448980f), bgH * (0.5 - 0.08035714f)));
+            pBgScore->addChild(indicatorNew);
         }
 
         CCLabelAtlas *current = CCLabelAtlas::create(CCString::createWithFormat("%d", m_CurrentScore)->getCString(), "fonts/font2.png", 36, 48, '0');
         current->setAnchorPoint(ccp(0.5, 0.5));
-        current->setPosition(pBgScore->getPositionX(), pBgScore->getPositionY() + bgH * 0.1394f);
-        m_pOverLayer->addChild(current);
+        current->setPosition(bgW / 2, bgH * 0.6394f);
+        pBgScore->addChild(current);
         CCLabelAtlas *best = CCLabelAtlas::create(CCString::createWithFormat("%d", record)->getCString(), "fonts/font2.png", 36, 48, '0');
         best->setAnchorPoint(ccp(0.5, 0.5));
-        best->setPosition(pBgScore->getPositionX(), pBgScore->getPositionY() - bgH * 0.27679f);
-        m_pOverLayer->addChild(best);
+        best->setPosition(bgW / 2, bgH * (0.5 - 0.27679f));
+        pBgScore->addChild(best);
 
         CCMenuItemImage *pRetry = LGMenuItemImage::create("retry.png", NULL, this, menu_selector(GameScene::retryCallback));
         CCMenuItemImage *pMenu = LGMenuItemImage::create("menu.png", NULL, this, menu_selector(GameScene::menuCallback));
 
-        pRetry->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width * 0.26666667f, m_VisibleOrigin.y + m_VisibleSize.height * 0.285f));
-        pMenu->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width * 0.73333333f, pRetry->getPositionY()));
+        pRetry->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width * 0.73333333f, m_VisibleOrigin.y + m_VisibleSize.height * 0.285f));
+        pMenu->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width * 0.26666667f, pRetry->getPositionY()));
 
         CCMenu *pCCMenu = CCMenu::create(pRetry, pMenu, NULL);
+        pCCMenu->setTag(kTagOverMenu);
         pCCMenu->setAnchorPoint(CCPointZero);
-        pCCMenu->setPosition(CCPointZero);
+        pCCMenu->setPosition(ccp(0, m_VisibleOrigin.y - (pRetry->getPositionY() - m_VisibleOrigin.y) * 2));
         m_pOverLayer->addChild(pCCMenu);
     }
+
+    m_pOverLayer->getChildByTag(kTagOverScoreBoard)->runAction(CCMoveTo::create(0.5f, ccp(m_VisibleOrigin.x + m_VisibleSize.width / 2, m_VisibleOrigin.y + m_VisibleSize.height * 0.535f)));
+    m_pOverLayer->getChildByTag(kTagOverMenu)->runAction(CCMoveTo::create(1.0f, CCPointZero));
 
     if (m_pOverLayer && m_pOverLayer->getParent() == NULL)
     {
@@ -573,6 +566,7 @@ void GameScene::showOverView()
         m_CurrentLayer->retain();
         onShowOverlay(true);
     }
+
     m_ScoreLabel->setVisible(false);
 }
 
