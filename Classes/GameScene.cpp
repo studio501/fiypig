@@ -291,7 +291,7 @@ void GameScene::update(float delta)
 
                 GameManager *gameManager = GameManager::getInstance();
                 gameManager->addGoalToday();
-                if (gameManager->getGoalsToday() >= 2 && m_CurrentScore >= 0 && gameManager->getRated() == false && gameManager->getLaterTS() != Util::getCurrentDays())
+                if (gameManager->getGoalsToday() >= 2 && m_CurrentScore >= 5 && gameManager->getRated() == false && gameManager->getLaterTS() != Util::getCurrentDays())
                 {
                     showRateView();
                 }
