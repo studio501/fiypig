@@ -3,6 +3,17 @@
 #import "cocos2d.h"
 #import "AppDelegate.h"
 #import "RootViewController.h"
+#import "Flurry.h"
+#import "Chartboost.h"
+
+#define FLURRY_KEY @"XTM2QTT9QXPCD6SC8R6Z"
+#define ADMOB_ID @"a152ff0a75dd1c3"
+#define CHARTBOOST_KEY @"52ff0a6c9ddc35691af95857"
+#define CHARTBOOST_SIGNATURE @"0e99d7b88fbecf85e28ee8f44fe36124722e08c0"
+#define APP_ID @"539190656"
+
+@interface AppController () <ChartboostDelegate>
+@end
 
 @implementation AppController
 
@@ -11,11 +22,17 @@
 
 // cocos2d application instance
 static AppDelegate s_sharedApplication;
+static id instance;
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    instance = self;
+    
+    [Flurry startSession:FLURRY_KEY];
+    [Flurry logEvent:@"Start of Block Puzzle"];
     
     // Override point for customization after application launch.
-
+    
     // Add the view controller's view to the window and display.
     window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
     
@@ -27,12 +44,37 @@ static AppDelegate s_sharedApplication;
                                       sharegroup: nil
                                    multiSampling: NO
                                  numberOfSamples: 0];
-
-    // Use RootViewController manage EAGLView 
+    
+    // Use RootViewController manage EAGLView
     viewController = [[RootViewController alloc] initWithNibName:nil bundle:nil];
     viewController.wantsFullScreenLayout = YES;
     viewController.view = __glView;
-
+    
+    self.adBanner = [[GADBannerView alloc] initWithAdSize:kGADAdSizeBanner];
+    self.adBanner.adUnitID = ADMOB_ID;
+    self.adBanner.rootViewController = viewController;
+    [viewController.view addSubview:self.adBanner];
+    [self.adBanner loadRequest:[GADRequest request]];
+    
+    self.adMRect = [[GADBannerView alloc] initWithAdSize:kGADAdSizeMediumRectangle];
+    self.adMRect.adUnitID = ADMOB_ID;
+    self.adMRect.rootViewController = viewController;
+    self.adMRect.hidden = YES;
+    CGRect frame = self.adMRect.frame;
+    frame.origin.x = (__glView.frame.size.width - self.adMRect.frame.size.width) / 2;
+    frame.origin.y = (__glView.frame.size.height - self.adMRect.frame.size.height) / 2;
+    self.adMRect.frame = frame;
+    [viewController.view addSubview:self.adMRect];
+    [self.adMRect loadRequest:[GADRequest request]];
+    
+    Chartboost *cb = [Chartboost sharedChartboost];
+    cb.appId = CHARTBOOST_KEY;
+    cb.appSignature = CHARTBOOST_SIGNATURE;
+    cb.delegate = self;
+    [cb startSession];
+    [cb showInterstitial];
+    [cb cacheMoreApps];
+    
     // Set RootViewController to window
     if ( [[UIDevice currentDevice].systemVersion floatValue] < 6.0)
     {
@@ -50,7 +92,7 @@ static AppDelegate s_sharedApplication;
     [[UIApplication sharedApplication] setStatusBarHidden:true];
     
     cocos2d::CCApplication::sharedApplication()->run();
-
+    
     return YES;
 }
 
@@ -67,12 +109,13 @@ static AppDelegate s_sharedApplication;
     /*
      Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
      */
+    
     cocos2d::CCDirector::sharedDirector()->resume();
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     /*
-     Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
+     Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
      If your application supports background execution, called instead of applicationWillTerminate: when the user quits.
      */
     cocos2d::CCApplication::sharedApplication()->applicationDidEnterBackground();
@@ -90,6 +133,8 @@ static AppDelegate s_sharedApplication;
      Called when the application is about to terminate.
      See also applicationDidEnterBackground:.
      */
+    
+    [Flurry logEvent:@"Termination of Block Puzzle"];
 }
 
 
@@ -102,10 +147,158 @@ static AppDelegate s_sharedApplication;
      */
 }
 
-
 - (void)dealloc {
     [window release];
     [super dealloc];
+}
+
+- (int)getAdMobBannerHeight {
+    return self.adBanner.frame.size.height * [[UIScreen mainScreen] scale];
+}
+
+- (void)onMoreClicked {
+    [[Chartboost sharedChartboost] showMoreApps];
+}
+
+- (void)setAdMobBannerPosition:(bool)top {
+    CGRect screen = [UIScreen mainScreen].bounds;
+    CGRect frame = self.adBanner.frame;
+    frame.origin.y = (top ? 0 : screen.size.height - frame.size.height);
+    self.adBanner.frame = frame;
+}
+
+- (void)showAdMobBanner:(bool)show {
+    [self.adBanner setHidden:(show ? NO : YES)];
+}
+
+- (void)showAdMobMRect:(bool)show {
+    [self.adMRect setHidden:(show ? NO : YES)];
+}
+
+- (void)showInterstitial {
+    [[Chartboost sharedChartboost] showInterstitial];
+}
+
+- (void)rateApp {
+    static NSString *const iOSAppStoreURLFormat = @"itms-apps://itunes.apple.com/app/id%@?at=10l6dK";
+    static NSString *const iOS7AppStoreURLFormat = @"itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=%@&at=10l6dK";
+    
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:([[UIDevice currentDevice].systemVersion floatValue] >= 7.0f)? iOS7AppStoreURLFormat: iOSAppStoreURLFormat, APP_ID]];
+    [[UIApplication sharedApplication] openURL:url];
+}
+
++ (AppController *)getCurrentInstance {
+    return (AppController *)instance;
+}
+
+/*
+ * Chartboost Delegate Methods
+ *
+ * Recommended for everyone: shouldDisplayInterstitial
+ */
+
+- (BOOL)shouldRequestInterstitialsInFirstSession {
+    return YES;
+}
+
+- (BOOL)shouldRequestInterstitial:(NSString *)location {
+    return YES;
+}
+
+- (BOOL)shouldDisplayInterstitial:(NSString *)location {
+    NSLog(@"about to display interstitial at location %@", location);
+    return YES;
+}
+
+- (BOOL)shouldDisplayMoreApps {
+    return YES;
+}
+
+- (BOOL)shouldDisplayLoadingViewForMoreApps {
+    return YES;
+}
+
+- (void)didCloseInterstitial:(NSString *)location {
+    
+}
+
+- (void)didFailToLoadInterstitial:(NSString *)location {
+    NSLog(@"failure to load interstitial at location %@", location);
+    
+    // Show a house ad or do something else when a chartboost interstitial fails to load
+}
+
+/*
+ * didCacheInterstitial
+ *
+ * Passes in the location name that has successfully been cached.
+ *
+ * Is fired on:
+ * - All assets loaded
+ * - Triggered by cacheInterstitial
+ *
+ * Notes:
+ * - Similar to this is: cb.hasCachedInterstitial(String location)
+ * Which will return true if a cached interstitial exists for that location
+ */
+
+- (void)didCacheInterstitial:(NSString *)location {
+    NSLog(@"interstitial cached at location %@", location);
+    
+}
+
+/*
+ * didFailToLoadMoreApps
+ *
+ * This is called when the more apps page has failed to load for any reason
+ *
+ * Is fired on:
+ * - No network connection
+ * - No more apps page has been created (add a more apps page in the dashboard)
+ * - No publishing campaign matches for that user (add more campaigns to your more apps page)
+ *  -Find this inside the App > Edit page in the Chartboost dashboard
+ */
+
+- (void)didFailToLoadMoreApps {
+    NSLog(@"failure to load more apps");
+}
+
+
+/*
+ * didDismissInterstitial
+ *
+ * This is called when an interstitial is dismissed
+ *
+ * Is fired on:
+ * - Interstitial click
+ * - Interstitial close
+ *
+ * #Pro Tip: Use the delegate method below to immediately re-cache interstitials
+ */
+
+- (void)didDismissInterstitial:(NSString *)location {
+    NSLog(@"dismissed interstitial at location %@", location);
+    
+    [[Chartboost sharedChartboost] cacheInterstitial:location];
+}
+
+
+/*
+ * didDismissMoreApps
+ *
+ * This is called when the more apps page is dismissed
+ *
+ * Is fired on:
+ * - More Apps click
+ * - More Apps close
+ *
+ * #Pro Tip: Use the delegate method below to immediately re-cache the more apps page
+ */
+
+- (void)didDismissMoreApps {
+    NSLog(@"dismissed more apps page, re-caching now");
+    
+    [[Chartboost sharedChartboost] cacheMoreApps];
 }
 
 
