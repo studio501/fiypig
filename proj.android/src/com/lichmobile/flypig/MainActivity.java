@@ -41,11 +41,14 @@ import android.widget.Toast;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.flurry.android.FlurryAgent;
-import com.google.ads.AdRequest;
-import com.google.ads.AdSize;
-import com.google.ads.AdView;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.appstate.AppStateClient;
+import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.plus.PlusClient;
 
-public class MainActivity extends Cocos2dxActivity {
+public class MainActivity extends Cocos2dxActivity implements GameHelper.GameHelperListener {
     private static final String ADMOB_ID = "a152fcc3d561c57";
     private static final String CHARTBOOST_APPID = "52fb04702d42da57bc7e8b95";
     private static final String CHARTBOOST_APPSIGNATURE = "1999c1fc640280a0e033219cc04010db536d85a8";
@@ -62,6 +65,12 @@ public class MainActivity extends Cocos2dxActivity {
 
         addChartboostAds();
         addAdMob();
+
+        mHelper = new GameHelper(this);
+        if (mDebugLog) {
+            mHelper.enableDebugLog(mDebugLog, mDebugTag);
+        }
+        mHelper.setup(this, mRequestedClients, mAdditionalScopes);
     }
 
     public Cocos2dxGLSurfaceView onCreateView() {
@@ -166,15 +175,19 @@ public class MainActivity extends Cocos2dxActivity {
         try {
             FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             adParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            mAdMobBanner = new AdView(this, AdSize.SMART_BANNER, ADMOB_ID);
-            mAdMobBanner.loadAd(new AdRequest());
+            mAdMobBanner = new AdView(this);
+            mAdMobBanner.setAdSize(AdSize.SMART_BANNER);
+            mAdMobBanner.setAdUnitId(ADMOB_ID);
+            mAdMobBanner.loadAd(new AdRequest.Builder().build());
             addContentView(mAdMobBanner, adParams);
 
             adParams = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             adParams.gravity = Gravity.CENTER;
-            mAdMobMRect = new AdView(this, AdSize.IAB_MRECT, ADMOB_ID);
+            mAdMobMRect = new AdView(this);
+            mAdMobMRect.setAdSize(AdSize.MEDIUM_RECTANGLE);
+            mAdMobMRect.setAdUnitId(ADMOB_ID);
             mAdMobMRect.setVisibility(View.GONE);
-            mAdMobMRect.loadAd(new AdRequest());
+            mAdMobMRect.loadAd(new AdRequest.Builder().build());
             addContentView(mAdMobMRect, adParams);
         } catch (Exception e) {
         }
@@ -186,6 +199,8 @@ public class MainActivity extends Cocos2dxActivity {
 
         mChartboost.onStart(this);
         FlurryAgent.onStartSession(getApplicationContext(), FLURRY_ID);
+
+        mHelper.onStart(this);
     }
 
     @Override
@@ -210,6 +225,8 @@ public class MainActivity extends Cocos2dxActivity {
 
         mChartboost.onStop(this);
         FlurryAgent.onEndSession(getApplicationContext());
+
+        mHelper.onStop();
     }
 
     @Override
@@ -226,6 +243,12 @@ public class MainActivity extends Cocos2dxActivity {
         super.onDestroy();
 
         mChartboost.onDestroy(this);
+    }
+
+    @Override
+    protected void onActivityResult(int request, int response, Intent data) {
+        super.onActivityResult(request, response, data);
+        mHelper.onActivityResult(request, response, data);
     }
 
     @Override
@@ -310,5 +333,123 @@ public class MainActivity extends Cocos2dxActivity {
 
     static {
         System.loadLibrary("flypig");
+    }
+
+    // The game helper object. This class is mainly a wrapper around this object.
+    protected GameHelper mHelper;
+    protected String mDebugTag = "MainActivity";
+    protected boolean mDebugLog = false;
+    // We expose these constants here because we don't want users of this class
+    // to have to know about GameHelper at all.
+
+    public static final int CLIENT_GAMES = GameHelper.CLIENT_GAMES;
+    public static final int CLIENT_APPSTATE = GameHelper.CLIENT_APPSTATE;
+    public static final int CLIENT_PLUS = GameHelper.CLIENT_PLUS;
+    public static final int CLIENT_ALL = GameHelper.CLIENT_ALL;
+
+    // Requested clients. By default, that's just the games client.
+    protected int mRequestedClients = CLIENT_GAMES;
+
+    // stores any additional scopes.
+    private String[] mAdditionalScopes;
+
+    protected GamesClient getGamesClient() {
+        return mHelper.getGamesClient();
+    }
+
+    protected AppStateClient getAppStateClient() {
+        return mHelper.getAppStateClient();
+    }
+
+    protected PlusClient getPlusClient() {
+        return mHelper.getPlusClient();
+    }
+
+    protected boolean isSignedIn() {
+        return mHelper.isSignedIn();
+    }
+
+    protected void beginUserInitiatedSignIn() {
+        mHelper.beginUserInitiatedSignIn();
+    }
+
+    protected void signOut() {
+        mHelper.signOut();
+    }
+
+    protected void showAlert(String title, String message) {
+        mHelper.showAlert(title, message);
+    }
+
+    protected void showAlert(String message) {
+        mHelper.showAlert(message);
+    }
+
+    protected void enableDebugLog(boolean enabled, String tag) {
+        mDebugLog = true;
+        mDebugTag = tag;
+        if (mHelper != null) {
+            mHelper.enableDebugLog(enabled, tag);
+        }
+    }
+
+    protected String getInvitationId() {
+        return mHelper.getInvitationId();
+    }
+
+    protected void reconnectClients(int whichClients) {
+        mHelper.reconnectClients(whichClients);
+    }
+
+    protected String getScopes() {
+        return mHelper.getScopes();
+    }
+
+    protected String[] getScopesArray() {
+        return mHelper.getScopesArray();
+    }
+
+    protected boolean hasSignInError() {
+        return mHelper.hasSignInError();
+    }
+
+    protected GameHelper.SignInFailureReason getSignInError() {
+        return mHelper.getSignInError();
+    }
+
+    @Override
+    public void onSignInFailed() {
+        // // Sign-in failed, so show sign-in button on main menu
+        // mMainMenuFragment.setGreeting(getString(R.string.signed_out_greeting));
+        // mMainMenuFragment.setShowSignInButton(true);
+        // mWinFragment.setShowSignInButton(true);
+    }
+
+    @Override
+    public void onSignInSucceeded() {
+        // // Show sign-out button on main menu
+        // mMainMenuFragment.setShowSignInButton(false);
+        //
+        // // Show "you are signed in" message on win screen, with no sign in button.
+        // mWinFragment.setShowSignInButton(false);
+        //
+        // // Set the greeting appropriately on main menu
+        // Player p = getGamesClient().getCurrentPlayer();
+        // String displayName;
+        // if (p == null) {
+        // Log.w(TAG, "mGamesClient.getCurrentPlayer() is NULL!");
+        // displayName = "???";
+        // } else {
+        // displayName = p.getDisplayName();
+        // }
+        // mMainMenuFragment.setGreeting("Hello, " + displayName);
+        //
+        //
+        // // if we have accomplishments to push, push them
+        // if (!mOutbox.isEmpty()) {
+        // pushAccomplishments();
+        // Toast.makeText(this, getString(R.string.your_progress_will_be_uploaded),
+        // Toast.LENGTH_LONG).show();
+        // }
     }
 }
