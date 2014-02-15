@@ -122,7 +122,7 @@ bool GameScene::init()
     addChild(m_Title);
     m_Hint = CCSprite::create("hint.png");
     m_Hint->retain();
-    m_Hint->setScale(0.85f);
+    m_Hint->setScale(0.76f);
     m_Hint->setPosition(ccp(m_VisibleOrigin.x + m_VisibleSize.width / 2, m_VisibleOrigin.y + m_VisibleSize.height / 2));
     addChild(m_Hint);
 

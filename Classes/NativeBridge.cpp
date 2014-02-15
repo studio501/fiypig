@@ -94,19 +94,6 @@ void NativeBridge::showInterstitial()
 #endif
 }
 
-void NativeBridge::showAdMobInterstitial()
-{
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
-    cocos2d::JniMethodInfo methodInfo;
-    if (cocos2d::JniHelper::getStaticMethodInfo(methodInfo, CLASS_NAME, "showAdMobInterstitial", "()V"))
-    {
-        methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID, NULL);
-    }
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    ios_showAdMobInterstitial();
-#endif
-}
-
 void NativeBridge::rateApp()
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
