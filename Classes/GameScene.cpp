@@ -4,6 +4,9 @@
 
 #include "SimpleAudioEngine.h"
 #include "MainScene.h"
+#include "GameManager.h"
+#include "Util.h"
+#include "NativeBridge.h"
 
 USING_NS_CC;
 
@@ -49,7 +52,9 @@ GameScene::GameScene()
     , m_pPause(NULL)
     , m_pPauseLayer(NULL)
     , m_pOverLayer(NULL)
+    , m_pRateLayer(NULL)
     , m_CurrentLayer(NULL)
+    , m_ToShowOverView(false)
 {
     memset(m_Pillars, 0, sizeof(m_Pillars));
     m_VisibleOrigin = CCDirector::sharedDirector()->getVisibleOrigin();
@@ -74,6 +79,7 @@ GameScene::~GameScene()
     CC_SAFE_RELEASE_NULL(m_pPause);
     CC_SAFE_RELEASE_NULL(m_pPauseLayer);
     CC_SAFE_RELEASE_NULL(m_pOverLayer);
+    CC_SAFE_RELEASE_NULL(m_pRateLayer);
     CC_SAFE_RELEASE_NULL(m_CurrentLayer);
 }
 
@@ -144,6 +150,12 @@ void GameScene::onEnter()
     CCDirector *pDirector = CCDirector::sharedDirector();
     pDirector->getTouchDispatcher()->addTargetedDelegate(this, 0, true);
     CCLayer::onEnter();
+
+
+    if (m_ToShowOverView)
+    {
+        showOverView();
+    }
 }
 
 void GameScene::onExit()
@@ -277,7 +289,16 @@ void GameScene::update(float delta)
             {
                 m_pPig->stopAllActions();
 
-                showOverView();
+                GameManager *gameManager = GameManager::getInstance();
+                gameManager->addGoalToday();
+                if (gameManager->getGoalsToday() >= 2 && m_CurrentScore >= 0 && gameManager->getRated() == false && gameManager->getLaterTS() != Util::getCurrentDays())
+                {
+                    showRateView();
+                }
+                else
+                {
+                    showOverView();
+                }
 
                 if (m_Sound)
                 {
@@ -354,6 +375,32 @@ void GameScene::menuCallback(CCObject* pSender)
 void GameScene::retryCallback(CCObject* pSender)
 {
     CCDirector::sharedDirector()->replaceScene(GameScene::scene());
+}
+
+void GameScene::rateCallback(CCObject *pSender)
+{
+    GameManager::getInstance()->saveRated(true);
+
+    NativeBridge::rateApp();
+
+    m_pRateLayer->removeFromParent();
+
+    CC_SAFE_RELEASE_NULL(m_CurrentLayer);
+    onShowOverlay(false);
+
+    scheduleOnce(schedule_selector(GameScene::showOverViewSchedule), 2.0f);
+}
+
+void GameScene::laterCallback(CCObject *pSender)
+{
+    GameManager::getInstance()->saveLaterTS(Util::getCurrentDays());
+
+    m_pRateLayer->removeFromParent();
+
+    CC_SAFE_RELEASE_NULL(m_CurrentLayer);
+    onShowOverlay(false);
+
+    showOverView();
 }
 
 void GameScene::addPig()
@@ -570,6 +617,43 @@ void GameScene::showOverView()
     m_ScoreLabel->setVisible(false);
 }
 
+void GameScene::showRateView()
+{
+    if (m_pRateLayer == NULL)
+    {
+        m_pRateLayer = LGLayerColor::create(ccc4(0, 0, 0, 0));
+        m_pRateLayer->retain();
+        m_pRateLayer->setTouchMode(kCCTouchesOneByOne);
+        m_pRateLayer->setTouchEnabled(true);
+        m_pRateLayer->setZOrder(3);
+
+        CCSprite *pBg = CCSprite::create("rate_bg.png");
+        pBg->setPosition(m_VisibleOrigin + m_VisibleSize / 2);
+        m_pRateLayer->addChild(pBg);
+
+        float bgW = pBg->getContentSize().width, bgH = pBg->getContentSize().height;
+        CCMenuItemImage *pRate = LGMenuItemImage::create("rate_rate.png", NULL, this, menu_selector(GameScene::rateCallback));
+        pRate->setPosition(ccp(pBg->getPositionX() - 0.2592593f * bgW, pBg->getPositionY() - 0.6566f * bgH));
+
+        CCMenuItemImage *pLater = LGMenuItemImage::create("rate_later.png", NULL, this, menu_selector(GameScene::laterCallback));
+        pLater->setPosition(ccp(pBg->getPositionX() + 0.2592593f * bgW, pRate->getPositionY()));
+
+        CCMenu *pMenu = CCMenu::create(pRate, pLater, NULL);
+        pMenu->setAnchorPoint(CCPointZero);
+        pMenu->setPosition(CCPointZero);
+        m_pRateLayer->addChild(pMenu);
+    }
+
+    if (m_pRateLayer && m_pRateLayer->getParent() == NULL)
+    {
+        getParent()->addChild(m_pRateLayer);
+        CC_SAFE_RELEASE_NULL(m_CurrentLayer);
+        m_CurrentLayer = m_pRateLayer;
+        m_CurrentLayer->retain();
+        onShowOverlay(true);
+    }
+}
+
 void GameScene::onShowOverlay(bool show)
 {
     m_pPause->setVisible(!show);
@@ -581,4 +665,9 @@ void GameScene::playDieEffect(float delta)
     {
         CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_DIE);
     }
+}
+
+void GameScene::showOverViewSchedule(float dt)
+{
+    showOverView();
 }

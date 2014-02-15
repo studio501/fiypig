@@ -35,6 +35,8 @@ public:
     void continueCallback(CCObject* pSender);
     void menuCallback(CCObject* pSender);
     void retryCallback(CCObject* pSender);
+    void rateCallback(CCObject *pSender);
+    void laterCallback(CCObject *pSender);
 
 private:
     void addPig();
@@ -42,8 +44,10 @@ private:
     void updatePillar(float dt);
     void showPauseView();
     void showOverView();
+    void showRateView();
     void onShowOverlay(bool show);
     void playDieEffect(float delta);
+    void showOverViewSchedule(float dt);
 
 private:
     cocos2d::CCPoint m_VisibleOrigin;
@@ -70,9 +74,11 @@ private:
     LGMenuItemImage *m_pPause;
     cocos2d::CCLayer *m_pPauseLayer;
     cocos2d::CCLayer *m_pOverLayer;
+    cocos2d::CCLayer *m_pRateLayer;
     cocos2d::CCLayer *m_CurrentLayer;
 
     bool m_Sound;
+    bool m_ToShowOverView;
 };
 
 #endif // __GAME_SCENE_H__

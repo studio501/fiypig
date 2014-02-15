@@ -306,7 +306,6 @@ public class MainActivity extends Cocos2dxActivity {
     }
 
     public static void showLeaderboard() {
-
     }
 
     static {
