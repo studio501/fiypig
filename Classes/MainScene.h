@@ -39,6 +39,8 @@ public:
     void rankCallback(CCObject *sender);
     void moreCallback(CCObject *sender);
 
+    void rankSchedule(float dt);
+
     virtual void onEnter();
     virtual void keyBackClicked();
 

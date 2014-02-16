@@ -106,3 +106,29 @@ void NativeBridge::rateApp()
     ios_rateApp();
 #endif
 }
+
+void NativeBridge::submitScore(int score)
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+    cocos2d::JniMethodInfo methodInfo;
+    if (cocos2d::JniHelper::getStaticMethodInfo(methodInfo, CLASS_NAME, "submitScore", "(I)V"))
+    {
+        methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID, score);
+    }
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    ios_submitScore(score);
+#endif
+}
+
+void NativeBridge::showLeaderboard()
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+    cocos2d::JniMethodInfo methodInfo;
+    if (cocos2d::JniHelper::getStaticMethodInfo(methodInfo, CLASS_NAME, "showLeaderboard", "()V"))
+    {
+        methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID, NULL);
+    }
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    ios_showLeaderboard();
+#endif
+}

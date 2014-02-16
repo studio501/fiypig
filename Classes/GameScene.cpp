@@ -574,6 +574,7 @@ void GameScene::showOverView()
         {
             record = m_CurrentScore;
             CCUserDefault::sharedUserDefault()->setIntegerForKey("record", record);
+            NativeBridge::submitScore(record);
 
             CCSprite *indicatorNew = CCSprite::create("new.png");
             indicatorNew->setPosition(ccp(bgW * (0.5 - 0.2448980f), bgH * (0.5 - 0.08035714f)));

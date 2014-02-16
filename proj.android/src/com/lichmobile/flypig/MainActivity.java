@@ -41,9 +41,9 @@ import android.widget.Toast;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
+import com.google.ads.AdRequest;
+import com.google.ads.AdSize;
+import com.google.ads.AdView;
 import com.google.android.gms.appstate.AppStateClient;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.plus.PlusClient;
@@ -175,19 +175,24 @@ public class MainActivity extends Cocos2dxActivity implements GameHelper.GameHel
         try {
             FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             adParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            mAdMobBanner = new AdView(this);
-            mAdMobBanner.setAdSize(AdSize.SMART_BANNER);
-            mAdMobBanner.setAdUnitId(ADMOB_ID);
-            mAdMobBanner.loadAd(new AdRequest.Builder().build());
+            mAdMobBanner = new AdView(this, AdSize.SMART_BANNER, ADMOB_ID);
+            mAdMobBanner.loadAd(new AdRequest());
+            // mAdMobBanner = new AdView(this);
+            // mAdMobBanner.setAdSize(AdSize.SMART_BANNER);
+            // mAdMobBanner.setAdUnitId(ADMOB_ID);
+            // mAdMobBanner.loadAd(new AdRequest.Builder().build());
             addContentView(mAdMobBanner, adParams);
 
             adParams = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             adParams.gravity = Gravity.CENTER;
-            mAdMobMRect = new AdView(this);
-            mAdMobMRect.setAdSize(AdSize.MEDIUM_RECTANGLE);
-            mAdMobMRect.setAdUnitId(ADMOB_ID);
+            mAdMobMRect = new AdView(this, AdSize.IAB_MRECT, ADMOB_ID);
             mAdMobMRect.setVisibility(View.GONE);
-            mAdMobMRect.loadAd(new AdRequest.Builder().build());
+            mAdMobMRect.loadAd(new AdRequest());
+            // mAdMobMRect = new AdView(this);
+            // mAdMobMRect.setAdSize(AdSize.MEDIUM_RECTANGLE);
+            // mAdMobMRect.setAdUnitId(ADMOB_ID);
+            // mAdMobMRect.setVisibility(View.GONE);
+            // mAdMobMRect.loadAd(new AdRequest.Builder().build());
             addContentView(mAdMobMRect, adParams);
         } catch (Exception e) {
         }
@@ -325,10 +330,32 @@ public class MainActivity extends Cocos2dxActivity implements GameHelper.GameHel
         });
     }
 
-    public static void submitScore(int score) {
+    public static void submitScore(final int score) {
+        sInstance.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!sInstance.isSignedIn()) {
+                    if (sInstance.mHighScore < score) {
+                        sInstance.mHighScore = score;
+                    }
+                } else {
+                    sInstance.getGamesClient().submitScore(sInstance.getString(R.string.highscore), score);
+                }
+            }
+        });
     }
 
     public static void showLeaderboard() {
+        sInstance.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!sInstance.isSignedIn()) {
+                    sInstance.beginUserInitiatedSignIn();
+                } else {
+                    sInstance.startActivityForResult(sInstance.getGamesClient().getLeaderboardIntent(sInstance.getString(R.string.highscore)), 0);
+                }
+            }
+        });
     }
 
     static {
@@ -419,37 +446,17 @@ public class MainActivity extends Cocos2dxActivity implements GameHelper.GameHel
 
     @Override
     public void onSignInFailed() {
-        // // Sign-in failed, so show sign-in button on main menu
-        // mMainMenuFragment.setGreeting(getString(R.string.signed_out_greeting));
-        // mMainMenuFragment.setShowSignInButton(true);
-        // mWinFragment.setShowSignInButton(true);
     }
+
+    private int mHighScore = -1;
 
     @Override
     public void onSignInSucceeded() {
-        // // Show sign-out button on main menu
-        // mMainMenuFragment.setShowSignInButton(false);
-        //
-        // // Show "you are signed in" message on win screen, with no sign in button.
-        // mWinFragment.setShowSignInButton(false);
-        //
-        // // Set the greeting appropriately on main menu
-        // Player p = getGamesClient().getCurrentPlayer();
-        // String displayName;
-        // if (p == null) {
-        // Log.w(TAG, "mGamesClient.getCurrentPlayer() is NULL!");
-        // displayName = "???";
-        // } else {
-        // displayName = p.getDisplayName();
-        // }
-        // mMainMenuFragment.setGreeting("Hello, " + displayName);
-        //
-        //
-        // // if we have accomplishments to push, push them
-        // if (!mOutbox.isEmpty()) {
-        // pushAccomplishments();
-        // Toast.makeText(this, getString(R.string.your_progress_will_be_uploaded),
-        // Toast.LENGTH_LONG).show();
-        // }
+        // if we have accomplishments to push, push them
+        if (mHighScore >= 0) {
+            getGamesClient().submitScore(getString(R.string.highscore), mHighScore);
+        }
+
+        startActivityForResult(getGamesClient().getLeaderboardIntent(getString(R.string.highscore)), 0);
     }
 }

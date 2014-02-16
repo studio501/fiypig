@@ -101,17 +101,17 @@ bool MainScene::init()
     addChild(pig);
 
     CCMenuItemImage *pPlay = LGMenuItemImage::create("play.png", NULL, this, menu_selector(MainScene::playCallback));
-    //pPlay->setPosition(ccp(visibleOrigin.x + 0.272917f * visibleSize.width, visibleOrigin.y + 0.305625f * visibleSize.height));
-    pPlay->setPosition(ccp(visibleCenter.x, visibleCenter.y - 0.12125f * visibleSize.height));
+    pPlay->setPosition(ccp(visibleOrigin.x + 0.272917f * visibleSize.width, visibleOrigin.y + 0.305625f * visibleSize.height));
+    //pPlay->setPosition(ccp(visibleCenter.x, visibleCenter.y - 0.12125f * visibleSize.height));
 
     CCMenuItemImage *pRank = LGMenuItemImage::create("rank.png", NULL, this, menu_selector(MainScene::rankCallback));
     pRank->setPosition(ccp(visibleOrigin.x + 0.727083f * visibleSize.width, pPlay->getPositionY()));
 
     CCMenuItemImage *pMore = LGMenuItemImage::create("more.png", NULL, this, menu_selector(MainScene::moreCallback));
-    //pMore->setPosition(ccp(visibleCenter.x, visibleCenter.y - 0.05125f * visibleSize.height));
-    pMore->setPosition(ccp(visibleCenter.x, visibleOrigin.y + 0.225625f * visibleSize.height));
+    pMore->setPosition(ccp(visibleCenter.x, visibleCenter.y - 0.05125f * visibleSize.height));
+    //pMore->setPosition(ccp(visibleCenter.x, visibleOrigin.y + 0.225625f * visibleSize.height));
 
-    CCMenu *pMenu = CCMenu::create(m_pSound, pPlay, /*pRank,*/ pMore, NULL);
+    CCMenu *pMenu = CCMenu::create(m_pSound, pPlay, pRank, pMore, NULL);
     pMenu->setAnchorPoint(CCPointZero);
     pMenu->setPosition(CCPointZero);
     addChild(pMenu);
@@ -144,6 +144,7 @@ void MainScene::playCallback(CCObject *sender)
 
 void MainScene::rankCallback(CCObject *sender)
 {
+    scheduleOnce(schedule_selector(MainScene::rankSchedule), 0.1f);
 }
 
 void MainScene::moreCallback(CCObject *sender)
@@ -153,6 +154,11 @@ void MainScene::moreCallback(CCObject *sender)
         CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
     }
     NativeBridge::onMoreClicked();
+}
+
+void MainScene::rankSchedule(float dt)
+{
+    NativeBridge::showLeaderboard();
 }
 
 void MainScene::onEnter()

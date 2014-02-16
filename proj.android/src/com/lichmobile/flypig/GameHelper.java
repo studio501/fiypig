@@ -41,7 +41,6 @@ import com.google.android.gms.common.Scopes;
 import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.multiplayer.Invitation;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.plus.PlusClient;
 
 public class GameHelper implements GooglePlayServicesClient.ConnectionCallbacks,
@@ -146,12 +145,6 @@ public class GameHelper implements GooglePlayServicesClient.ConnectionCallbacks,
      * null.
      */
     String mInvitationId;
-
-    /*
-     * If we got turn-based match when we connected to the games client, it's here. Otherwise, it's
-     * null.
-     */
-    TurnBasedMatch mTurnBasedMatch;
 
     // Listener
     GameHelperListener mListener = null;
@@ -276,7 +269,7 @@ public class GameHelper implements GooglePlayServicesClient.ConnectionCallbacks,
             mGamesClient = new GamesClient.Builder(getContext(), this, this)
                     .setGravityForPopups(Gravity.TOP | Gravity.CENTER_HORIZONTAL)
                     .setScopes(mScopes)
-                    .setShowConnectingPopup(true)
+//                    .setShowConnectingPopup(true)
                     .create();
 
         }
@@ -442,22 +435,22 @@ public class GameHelper implements GooglePlayServicesClient.ConnectionCallbacks,
         return mInvitationId;
     }
 
-    /**
-     * Returns the tbmp match received through an invitation notification. This
-     * should be called from your GameHelperListener's
-     * @link{GameHelperListener#onSignInSucceeded} method, to check if there's a
-     * match available.
-     * @return The match, or null if none was received.
-     */
-    public TurnBasedMatch getTurnBasedMatch() {
-        if (!checkState(TYPE_DEVELOPER_ERROR, "getTurnBasedMatch",
-                "TurnBasedMatch is only available when connected "
-                        + "(after getting the onSignInSucceeded callback).",
-                STATE_CONNECTED)) {
-            return null;
-        }
-        return mTurnBasedMatch;
-    }
+//    /**
+//     * Returns the tbmp match received through an invitation notification. This
+//     * should be called from your GameHelperListener's
+//     * @link{GameHelperListener#onSignInSucceeded} method, to check if there's a
+//     * match available.
+//     * @return The match, or null if none was received.
+//     */
+//    public TurnBasedMatch getTurnBasedMatch() {
+//        if (!checkState(TYPE_DEVELOPER_ERROR, "getTurnBasedMatch",
+//                "TurnBasedMatch is only available when connected "
+//                        + "(after getting the onSignInSucceeded callback).",
+//                STATE_CONNECTED)) {
+//            return null;
+//        }
+//        return mTurnBasedMatch;
+//    }
 
     /** Enables debug logging */
     public void enableDebugLog(boolean enabled, String tag) {
@@ -829,7 +822,7 @@ public class GameHelper implements GooglePlayServicesClient.ConnectionCallbacks,
     public void onConnected(Bundle connectionHint) {
 
         // Don't retain references to old matches.
-        mTurnBasedMatch = null;
+//        mTurnBasedMatch = null;
 
         debugLog("onConnected: connected! client=" + mClientCurrentlyConnecting);
 
@@ -853,12 +846,12 @@ public class GameHelper implements GooglePlayServicesClient.ConnectionCallbacks,
 
             debugLog("onConnected: connection hint provided. Checking for TBMP game.");
 
-            TurnBasedMatch match = connectionHint
-                    .getParcelable(GamesClient.EXTRA_TURN_BASED_MATCH);
-
-            if (match != null) {
-                mTurnBasedMatch = match;
-            }
+//            TurnBasedMatch match = connectionHint
+//                    .getParcelable(GamesClient.EXTRA_TURN_BASED_MATCH);
+//
+//            if (match != null) {
+//                mTurnBasedMatch = match;
+//            }
 
         }
 
