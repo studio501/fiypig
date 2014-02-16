@@ -59,6 +59,7 @@ private:
     cocos2d::CCSprite *m_Hint;
     float m_fForwordVelocity;
     float m_fFallVelocity;
+    float m_fMaxVelocity;
 
     cocos2d::CCSprite *m_pPig;
     cocos2d::CCSprite *m_Pillars[4];

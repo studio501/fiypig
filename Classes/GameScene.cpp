@@ -39,7 +39,8 @@ GameScene::GameScene()
     , m_Title(NULL)
     , m_Hint(NULL)
     , m_fForwordVelocity(-210)
-    , m_fFallVelocity(-600)
+    , m_fFallVelocity(0)
+    , m_fMaxVelocity(-600)
     , m_pPig(NULL)
     , m_PassedTime(0)
     , m_CurrentScore(0)
@@ -260,6 +261,8 @@ void GameScene::update(float delta)
         CCAction *pAction = m_pPig->getActionByTag(kTagRaise);
         if (!pAction || pAction->isDone())
         {
+            m_fFallVelocity += -1400 * delta;
+            m_fFallVelocity = MAX(m_fFallVelocity, m_fMaxVelocity);
             float posY = m_pPig->getPositionY() +m_fFallVelocity * delta;
             if (posY <= m_VisibleOrigin.y + m_GroundPosY + m_pPig->getContentSize().height / 2)
             {
@@ -443,6 +446,8 @@ void GameScene::raisePig()
 
         m_pPig->stopActionByTag(kTagRaise);
         m_pPig->runAction(action);
+
+        m_fFallVelocity = 0;
     }
 }
 
