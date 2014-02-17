@@ -345,11 +345,14 @@ public class MainActivity extends Cocos2dxActivity implements GameHelper.GameHel
         });
     }
 
+    private boolean mToShowLeaderboard = false;
+
     public static void showLeaderboard() {
         sInstance.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (!sInstance.isSignedIn()) {
+                    sInstance.mToShowLeaderboard = true;
                     sInstance.beginUserInitiatedSignIn();
                 } else {
                     sInstance.startActivityForResult(sInstance.getGamesClient().getLeaderboardIntent(sInstance.getString(R.string.highscore)), 0);
@@ -456,7 +459,9 @@ public class MainActivity extends Cocos2dxActivity implements GameHelper.GameHel
         if (mHighScore >= 0) {
             getGamesClient().submitScore(getString(R.string.highscore), mHighScore);
         }
-
-        startActivityForResult(getGamesClient().getLeaderboardIntent(getString(R.string.highscore)), 0);
+        if (mToShowLeaderboard) {
+            startActivityForResult(getGamesClient().getLeaderboardIntent(getString(R.string.highscore)), 0);
+            mToShowLeaderboard = false;
+        }
     }
 }
