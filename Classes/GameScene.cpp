@@ -273,9 +273,17 @@ void GameScene::update(float delta)
             m_pPig->setPositionY(posY);
             float orgRotation = m_pPig->getRotation();
             float rotation = 0;
-            if (orgRotation < -22)
+            if (orgRotation < -24)
+            {
+                rotation = orgRotation + delta * 10;
+            }
+            else if (orgRotation < -22)
             {
                 rotation = orgRotation + delta * 30;
+            }
+            else if (orgRotation < -16)
+            {
+                rotation = orgRotation + delta * 60;
             }
             else
             {
