@@ -397,7 +397,6 @@ void GameScene::rateCallback(CCObject *pSender)
     m_pRateLayer->removeFromParent();
 
     CC_SAFE_RELEASE_NULL(m_CurrentLayer);
-    onShowOverlay(false);
 
     scheduleOnce(schedule_selector(GameScene::showOverViewSchedule), 2.0f);
 }
@@ -409,7 +408,6 @@ void GameScene::laterCallback(CCObject *pSender)
     m_pRateLayer->removeFromParent();
 
     CC_SAFE_RELEASE_NULL(m_CurrentLayer);
-    onShowOverlay(false);
 
     showOverView();
 }

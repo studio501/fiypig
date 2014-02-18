@@ -334,12 +334,12 @@ public class MainActivity extends Cocos2dxActivity implements GameHelper.GameHel
         sInstance.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (!sInstance.isSignedIn()) {
-                    if (sInstance.mHighScore < score) {
-                        sInstance.mHighScore = score;
+                if (sInstance.mHighScore < score) {
+                    sInstance.mHighScore = score;
+
+                    if (sInstance.isSignedIn()) {
+                        sInstance.getGamesClient().submitScore(sInstance.getString(R.string.highscore), sInstance.mHighScore);
                     }
-                } else {
-                    sInstance.getGamesClient().submitScore(sInstance.getString(R.string.highscore), score);
                 }
             }
         });

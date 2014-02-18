@@ -138,9 +138,9 @@ void QuitScene::moreCallback(CCObject *sender)
 void QuitScene::keyBackClicked()
 {
     CCLayer::keyBackClicked();
-    if (m_Sound)
-    {
-        CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
-    }
-    CCDirector::sharedDirector()->popScene();
+    //if (m_Sound)
+    //{
+    //    CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect(SFX_SWOOSHING);
+    //}
+    //CCDirector::sharedDirector()->popScene();
 }
